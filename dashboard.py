@@ -1,5 +1,5 @@
 # =========================================================
-# 📊 DASHBOARD NIVEL SOCIO - FINANZAS
+# 📊 DASHBOARD FINANZAS - FINAL ESTABLE
 # =========================================================
 
 import streamlit as st
@@ -9,19 +9,12 @@ import plotly.express as px
 
 st.set_page_config(page_title="Dashboard Financiero", layout="wide")
 
-# =========================================================
-# 🎨 ESTILO
-# =========================================================
-PRIMARY = "#0b3c5d"
-SUCCESS = "#27ae60"
-DANGER = "#e74c3c"
-ACCENT = "#f39c12"
-
-st.markdown(f"<h1 style='color:{PRIMARY};'>📊 Reporte Ejecutivo</h1>", unsafe_allow_html=True)
+st.title("📊 Dashboard Ejecutivo Financiero")
 
 # =========================================================
-# 📂 CARGA
+# 📂 CARGA DE DATOS
 # =========================================================
+
 ventas = pd.read_excel("Ventas.xlsx")
 costos = pd.read_excel("Costos.xlsx")
 eerr = pd.read_excel("EERR.xlsx")
@@ -65,6 +58,7 @@ balance.rename(columns={
 # =========================================================
 # 📅 FECHAS SEGURAS
 # =========================================================
+
 def convertir_fecha(df, col):
     if not np.issubdtype(df[col].dtype, np.datetime64):
         df[col] = pd.to_datetime("1899-12-30") + pd.to_timedelta(df[col], unit="D")
@@ -75,13 +69,13 @@ def convertir_fecha(df, col):
 ventas = convertir_fecha(ventas, "fecha")
 costos = convertir_fecha(costos, "fecha")
 
-# =========================================================
-# 📆 MES
-# =========================================================
 ventas["mes"] = ventas["fecha"].dt.month
 costos["mes"] = costos["fecha"].dt.month
 
-# ✅ convertir meses texto → número
+# =========================================================
+# 🔧 CORREGIR MESES (CRÍTICO)
+# =========================================================
+
 mapa_meses = {
     "January": 1, "February": 2, "March": 3,
     "April": 4, "May": 5, "June": 6,
@@ -89,34 +83,33 @@ mapa_meses = {
     "October": 10, "November": 11, "December": 12
 }
 
-if eerr["mes"].dtype == object:
-    eerr["mes"] = eerr["mes"].map(mapa_meses)
-
-# ✅ eliminar nulos
+# ---- EERR
+eerr["mes"] = eerr["mes"].map(mapa_meses)
 eerr = eerr.dropna(subset=["mes"])
-
-# ✅ convertir a entero (CLAVE)
 eerr["mes"] = eerr["mes"].astype(int)
 
-
-if balance["mes"].dtype == object:
-    balance["mes"] = balance["mes"].map(mapa_meses)
-
+# ---- BALANCE
+balance["mes"] = balance["mes"].map(mapa_meses)
 balance = balance.dropna(subset=["mes"])
 balance["mes"] = balance["mes"].astype(int)
-
-
-# eliminar nulos después de map
-eerr = eerr.dropna(subset=["mes"])
-balance = balance.dropna(subset=["mes"])
 
 # =========================================================
 # 🎛️ FILTROS
 # =========================================================
+
 st.sidebar.header("Filtros")
 
-mes = st.sidebar.multiselect("Mes", sorted(ventas["mes"].unique()), default=sorted(ventas["mes"].unique()))
-region = st.sidebar.multiselect("Región", ventas["region"].unique(), default=ventas["region"].unique())
+mes = st.sidebar.multiselect(
+    "Mes",
+    sorted(ventas["mes"].unique()),
+    default=sorted(ventas["mes"].unique())
+)
+
+region = st.sidebar.multiselect(
+    "Región",
+    ventas["region"].unique(),
+    default=ventas["region"].unique()
+)
 
 ventas = ventas[(ventas["mes"].isin(mes)) & (ventas["region"].isin(region))]
 costos = costos[(costos["mes"].isin(mes)) & (costos["region"].isin(region))]
@@ -136,30 +129,21 @@ costos["costo_total"] = (
 costos_m = costos.groupby("mes")["costo_total"].sum().reset_index()
 
 df = pd.merge(ventas_m, costos_m, on="mes")
+
 df["mes"] = df["mes"].astype(int)
+
 df["utilidad"] = df["ingreso_neto"] - df["costo_total"]
 df["margen"] = df["utilidad"] / df["ingreso_neto"] * 100
 
 # =========================================================
-# 💰 EBITDA (robusto)
+# 💰 EBITDA (ROBUSTO)
 # =========================================================
 
 ebitda = eerr[eerr["cuenta"].str.contains("resultado|ebitda", case=False, na=False)]
 ebitda = ebitda.groupby("mes")["monto"].sum().reset_index()
-# ✅ convertir meses texto → número
-mapa_meses = {
-    "January": 1, "February": 2, "March": 3,
-    "April": 4, "May": 5, "June": 6,
-    "July": 7, "August": 8, "September": 9,
-    "October": 10, "November": 11, "December": 12
-}
 
-# aplicar solo si es texto
-if eerr["mes"].dtype == object:
-    eerr["mes"] = eerr["mes"].map(mapa_meses)
+ebitda["mes"] = ebitda["mes"].astype(int)
 
-# eliminar nulos
-eerr = eerr.dropna(subset=["mes"])
 df = pd.merge(df, ebitda, on="mes", how="left")
 
 # =========================================================
@@ -171,6 +155,9 @@ utilidad_neta = utilidad_neta.groupby("mes")["monto"].sum().reset_index()
 
 capital = balance[balance["grupo"].str.contains("patrimonio", case=False, na=False)]
 capital = capital.groupby("mes")["monto"].sum().reset_index()
+
+utilidad_neta["mes"] = utilidad_neta["mes"].astype(int)
+capital["mes"] = capital["mes"].astype(int)
 
 roic = pd.merge(utilidad_neta, capital, on="mes")
 roic["roic"] = roic["monto_x"] / roic["monto_y"] * 100
@@ -188,14 +175,23 @@ col4.metric("Margen", f"{df['margen'].mean():.1f}%")
 col5.metric("ROIC", f"{roic['roic'].mean():.1f}%")
 
 # =========================================================
-# 📈 VISUALES
+# 📈 GRÁFICOS
 # =========================================================
 
-st.plotly_chart(px.line(df, x="mes", y=["ingreso_neto","costo_total"], title="Ingresos vs Costos"), use_container_width=True)
+st.plotly_chart(
+    px.line(df, x="mes", y=["ingreso_neto", "costo_total"], title="Ingresos vs Costos"),
+    use_container_width=True
+)
 
-st.plotly_chart(px.bar(df, x="mes", y="utilidad", title="Utilidad"), use_container_width=True)
+st.plotly_chart(
+    px.bar(df, x="mes", y="utilidad", title="Utilidad"),
+    use_container_width=True
+)
 
-st.plotly_chart(px.line(roic, x="mes", y="roic", title="ROIC (%)"), use_container_width=True)
+st.plotly_chart(
+    px.line(roic, x="mes", y="roic", title="ROIC (%)"),
+    use_container_width=True
+)
 
 # =========================================================
 # 🧪 SIMULADOR
@@ -208,15 +204,11 @@ v_costos = st.slider("Variación costos %", -50, 50, 0)
 
 df_sim = df.copy()
 
-df_sim["ventas_sim"] = df_sim["ingreso_neto"]*(1+v_ventas/100)
-df_sim["costos_sim"] = df_sim["costo_total"]*(1+v_costos/100)
+df_sim["ventas_sim"] = df_sim["ingreso_neto"] * (1 + v_ventas / 100)
+df_sim["costos_sim"] = df_sim["costo_total"] * (1 + v_costos / 100)
 df_sim["utilidad_sim"] = df_sim["ventas_sim"] - df_sim["costos_sim"]
-df_sim["margen_sim"] = df_sim["utilidad_sim"]/df_sim["ventas_sim"]*100
 
 st.metric("Utilidad simulada", f"${df_sim['utilidad_sim'].sum():,.0f}")
-st.metric("Margen simulado", f"{df_sim['margen_sim'].mean():.1f}%")
-
-st.plotly_chart(px.line(df_sim, x="mes", y=["utilidad","utilidad_sim"], title="Escenario"), use_container_width=True)
 
 # =========================================================
 # 🔮 PROYECCIÓN
@@ -244,7 +236,7 @@ else:
     st.error("Caída en ingresos")
 
 # =========================================================
-# 📋 TABLA
+# 📋 TABLA FINAL
 # =========================================================
 
 st.dataframe(df)
