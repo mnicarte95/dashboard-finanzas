@@ -82,16 +82,25 @@ ventas["mes"] = ventas["fecha"].dt.month
 costos["mes"] = costos["fecha"].dt.month
 
 # convertir meses texto a número
-mapa = {
-    "January":1,"February":2,"March":3,"April":4,"May":5,"June":6,
-    "July":7,"August":8,"September":9,"October":10,"November":11,"December":12
+# ✅ convertir meses texto → número
+mapa_meses = {
+    "January": 1, "February": 2, "March": 3,
+    "April": 4, "May": 5, "June": 6,
+    "July": 7, "August": 8, "September": 9,
+    "October": 10, "November": 11, "December": 12
 }
 
+# aplicar solo si es texto
 if eerr["mes"].dtype == object:
-    eerr["mes"] = eerr["mes"].map(mapa)
+    eerr["mes"] = eerr["mes"].map(mapa_meses)
+
+# eliminar nulos
+eerr = eerr.dropna(subset=["mes"])
+
 
 if balance["mes"].dtype == object:
-    balance["mes"] = balance["mes"].map(mapa)
+    balance["mes"] = balance["mes"].map(mapa_meses)
+
 
 # eliminar nulos después de map
 eerr = eerr.dropna(subset=["mes"])
@@ -133,7 +142,20 @@ df["margen"] = df["utilidad"] / df["ingreso_neto"] * 100
 
 ebitda = eerr[eerr["cuenta"].str.contains("resultado|ebitda", case=False, na=False)]
 ebitda = ebitda.groupby("mes")["monto"].sum().reset_index()
+# ✅ convertir meses texto → número
+mapa_meses = {
+    "January": 1, "February": 2, "March": 3,
+    "April": 4, "May": 5, "June": 6,
+    "July": 7, "August": 8, "September": 9,
+    "October": 10, "November": 11, "December": 12
+}
 
+# aplicar solo si es texto
+if eerr["mes"].dtype == object:
+    eerr["mes"] = eerr["mes"].map(mapa_meses)
+
+# eliminar nulos
+eerr = eerr.dropna(subset=["mes"])
 df = pd.merge(df, ebitda, on="mes", how="left")
 
 # =========================================================
