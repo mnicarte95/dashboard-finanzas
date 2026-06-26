@@ -81,7 +81,6 @@ costos = convertir_fecha(costos, "fecha")
 ventas["mes"] = ventas["fecha"].dt.month
 costos["mes"] = costos["fecha"].dt.month
 
-# convertir meses texto a número
 # ✅ convertir meses texto → número
 mapa_meses = {
     "January": 1, "February": 2, "March": 3,
@@ -90,16 +89,21 @@ mapa_meses = {
     "October": 10, "November": 11, "December": 12
 }
 
-# aplicar solo si es texto
 if eerr["mes"].dtype == object:
     eerr["mes"] = eerr["mes"].map(mapa_meses)
 
-# eliminar nulos
+# ✅ eliminar nulos
 eerr = eerr.dropna(subset=["mes"])
+
+# ✅ convertir a entero (CLAVE)
+eerr["mes"] = eerr["mes"].astype(int)
 
 
 if balance["mes"].dtype == object:
     balance["mes"] = balance["mes"].map(mapa_meses)
+
+balance = balance.dropna(subset=["mes"])
+balance["mes"] = balance["mes"].astype(int)
 
 
 # eliminar nulos después de map
@@ -132,7 +136,7 @@ costos["costo_total"] = (
 costos_m = costos.groupby("mes")["costo_total"].sum().reset_index()
 
 df = pd.merge(ventas_m, costos_m, on="mes")
-
+df["mes"] = df["mes"].astype(int)
 df["utilidad"] = df["ingreso_neto"] - df["costo_total"]
 df["margen"] = df["utilidad"] / df["ingreso_neto"] * 100
 
