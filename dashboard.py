@@ -15,7 +15,6 @@ st.markdown(
     footer {visibility: hidden;}
     </style>
     """,
-    unsafe_allow_keys=True,
     unsafe_allow_html=True
 )
 # Configuración de página profesional
