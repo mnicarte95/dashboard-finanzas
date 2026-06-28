@@ -8,32 +8,31 @@ import plotly.express as px
 import streamlit.components.v1 as components
 
 # Ocultar el botón de Deploy y los elementos de la barra superior
-components.html(
+st.markdown(
     """
-    <script>
-    function eliminarBotones() {
-        // Busca y destruye la corona roja y el menú de la comunidad
-        const elementos = window.parent.document.querySelectorAll(
-            'div[data-testid="stStatusWidget"], .stAppDeployButton, [data-testid="stDecoration"], footer, [data-testid="stFooter"]'
-        );
-        elementos.forEach(el => el.remove());
-        
-        // También elimina cualquier contenedor flotante sospechoso en esa esquina
-        const flotantes = window.parent.document.querySelectorAll('div[style*="position: fixed"]');
-        flotantes.forEach(el => {
-            const estilo = el.getAttribute('style');
-            if (estilo.includes('bottom:') && (estilo.includes('right: 0') || estilo.includes('right:0'))) {
-                el.remove();
-            }
-        });
+    <style>
+    /* Oculta lo que el navegador sí permite modificar de raíz */
+    footer, [data-testid="stFooter"], header, [data-testid="stHeader"], [data-testid="stDecoration"] {
+        visibility: hidden !important;
+        display: none !important;
+        height: 0px !important;
     }
 
-    // Ejecuta la limpieza continuamente para evitar que Streamlit los vuelva a dibujar
-    setInterval(eliminarBotones, 500);
-    </script>
+    /* Crea un parche invisible sobre la esquina inferior derecha para bloquear los clics en esos iconos */
+    body::after {
+        content: "";
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        width: 150px;
+        height: 50px;
+        background-color: #FFFFFF; /* Coloca aquí el color de fondo de tu app (ej. #FFFFFF) */
+        z-index: 999999;
+        pointer-events: auto;
+    }
+    </style>
     """,
-    height=0,
-    width=0,
+    unsafe_allow_html=True
 )
 # Configuración de página profesional
 st.set_page_config(page_title="Dashboard Ejecutivo Financiero", layout="wide", page_icon="📊")
