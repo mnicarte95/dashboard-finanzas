@@ -10,9 +10,18 @@ import plotly.express as px
 st.markdown(
     """
     <style>
-    #MainMenu {visibility: hidden;}
-    header {visibility: hidden;}
-    footer {visibility: hidden;}
+    /* Oculta el footer flotante y el texto "Created with Streamlit" */
+    footer, .footer, [data-testid="stFooter"] {
+        visibility: hidden !important;
+        display: none !important;
+        height: 0px;
+    }
+    
+    /* Por si acaso, también ocultamos la barra superior y menús */
+    [data-testid="stHeader"], header, stDecoration {
+        visibility: hidden !important;
+        display: none !important;
+    }
     </style>
     """,
     unsafe_allow_html=True
