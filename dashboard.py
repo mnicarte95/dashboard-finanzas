@@ -10,15 +10,24 @@ import plotly.express as px
 st.markdown(
     """
     <style>
-    /* Oculta el footer flotante y el texto "Created with Streamlit" */
-    footer, .footer, [data-testid="stFooter"] {
+    /* Oculta los botones flotantes de la comunidad en Streamlit Cloud (esquina inferior derecha) */
+    div[data-testid="stStatusWidget"],
+    .stAppDeployButton,
+    [data-testid="stDecoration"],
+    #tabs-bui3-tab-0 + div {
         visibility: hidden !important;
         display: none !important;
-        height: 0px;
     }
-    
-    /* Por si acaso, también ocultamos la barra superior y menús */
-    [data-testid="stHeader"], header, stDecoration {
+
+    /* Remueve el contenedor inferior por completo */
+    footer, [data-testid="stFooter"] {
+        visibility: hidden !important;
+        display: none !important;
+        height: 0px !important;
+    }
+
+    /* Oculta la barra superior gris/blanca */
+    header, [data-testid="stHeader"] {
         visibility: hidden !important;
         display: none !important;
     }
