@@ -10,18 +10,32 @@ import plotly.express as px
 st.markdown(
     """
     <style>
-    /* Oculta de raíz cualquier contenedor flotante en la esquina inferior derecha */
-    div[style*="position: fixed"][style*="bottom:"] {
-        visibility: hidden !important;
+    /* 1. Apunta directamente a los elementos que contienen los textos y logos de la nube */
+    div[class*="viewerBadge"],
+    div[class*="ViewerBadge"],
+    a[href*="streamlit.io"],
+    button[title*="View"],
+    div[data-testid="stStatusWidget"] {
         display: none !important;
+        visibility: hidden !important;
         opacity: 0 !important;
         pointer-events: none !important;
+        height: 0px !important;
+        width: 0px !important;
     }
 
-    /* Refuerzo para clases globales del footer, header y decoración */
-    footer, [data-testid="stFooter"], header, [data-testid="stHeader"], [data-testid="stDecoration"] {
-        visibility: hidden !important;
+    /* 2. Selecciona de forma masiva cualquier contenedor flotante ajeno al cuerpo principal */
+    iframe + div, 
+    #root + div {
         display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+    }
+
+    /* 3. Limpieza estándar del footer y cabecera del sistema */
+    footer, [data-testid="stFooter"], header, [data-testid="stHeader"] {
+        display: none !important;
+        visibility: hidden !important;
         height: 0px !important;
     }
     </style>
