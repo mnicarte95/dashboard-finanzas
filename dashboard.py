@@ -5,42 +5,35 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
+import streamlit.components.v1 as components
 
 # Ocultar el botón de Deploy y los elementos de la barra superior
-st.markdown(
+components.html(
     """
-    <style>
-    /* 1. Apunta directamente a los elementos que contienen los textos y logos de la nube */
-    div[class*="viewerBadge"],
-    div[class*="ViewerBadge"],
-    a[href*="streamlit.io"],
-    button[title*="View"],
-    div[data-testid="stStatusWidget"] {
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
-        pointer-events: none !important;
-        height: 0px !important;
-        width: 0px !important;
+    <script>
+    function eliminarBotones() {
+        // Busca y destruye la corona roja y el menú de la comunidad
+        const elementos = window.parent.document.querySelectorAll(
+            'div[data-testid="stStatusWidget"], .stAppDeployButton, [data-testid="stDecoration"], footer, [data-testid="stFooter"]'
+        );
+        elementos.forEach(el => el.remove());
+        
+        // También elimina cualquier contenedor flotante sospechoso en esa esquina
+        const flotantes = window.parent.document.querySelectorAll('div[style*="position: fixed"]');
+        flotantes.forEach(el => {
+            const estilo = el.getAttribute('style');
+            if (estilo.includes('bottom:') && (estilo.includes('right: 0') || estilo.includes('right:0'))) {
+                el.remove();
+            }
+        });
     }
 
-    /* 2. Selecciona de forma masiva cualquier contenedor flotante ajeno al cuerpo principal */
-    iframe + div, 
-    #root + div {
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
-    }
-
-    /* 3. Limpieza estándar del footer y cabecera del sistema */
-    footer, [data-testid="stFooter"], header, [data-testid="stHeader"] {
-        display: none !important;
-        visibility: hidden !important;
-        height: 0px !important;
-    }
-    </style>
+    // Ejecuta la limpieza continuamente para evitar que Streamlit los vuelva a dibujar
+    setInterval(eliminarBotones, 500);
+    </script>
     """,
-    unsafe_allow_html=True
+    height=0,
+    width=0,
 )
 # Configuración de página profesional
 st.set_page_config(page_title="Dashboard Ejecutivo Financiero", layout="wide", page_icon="📊")
