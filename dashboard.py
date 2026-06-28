@@ -6,6 +6,18 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 
+# Ocultar el botón de Deploy y los elementos de la barra superior
+st.markdown(
+    """
+    <style>
+    #MainMenu {visibility: hidden;}
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
+    </style>
+    """,
+    unsafe_allow_keys=True,
+    unsafe_allow_html=True
+)
 # Configuración de página profesional
 st.set_page_config(page_title="Dashboard Ejecutivo Financiero", layout="wide", page_icon="📊")
 
